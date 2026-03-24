@@ -178,4 +178,4 @@ The workflow reads structured input from Google Sheets.
 Add your workflow screenshot here:
 
 ```markdown
-![Workflow](./assets/workflow.png)
+![Workflow](./assets/Workflow.jpg)
