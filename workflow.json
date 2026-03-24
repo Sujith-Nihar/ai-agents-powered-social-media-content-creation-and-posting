@@ -1,0 +1,792 @@
+{
+  "name": "My workflow 2",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {}
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        0,
+        0
+      ],
+      "id": "74943b7e-9ecc-4147-88d6-3cedf4a11d76",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "19mUFXIojDqe66JFMiCxPw6a0XflCFvtOOlqsshc7TrQ",
+          "mode": "list",
+          "cachedResultName": "ideas",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/19mUFXIojDqe66JFMiCxPw6a0XflCFvtOOlqsshc7TrQ/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/19mUFXIojDqe66JFMiCxPw6a0XflCFvtOOlqsshc7TrQ/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        208,
+        0
+      ],
+      "id": "c8358bda-d79f-48e3-988a-5639e5bac340",
+      "name": "Get row(s) in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "c6A68vxDLwtSxKfj",
+          "name": "Google Sheets account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        416,
+        0
+      ],
+      "id": "68305dbb-d632-496e-9891-db623fd8b35b",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "c20bea06-2364-46b8-954d-0c6320c772c0",
+              "name": "extract",
+              "value": "={{ $('Message a model').item.json.content.parts[0].text }}",
+              "type": "object"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        624,
+        -96
+      ],
+      "id": "6f492225-970c-4199-9dcd-6a6b8d1164a2",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.5-flash",
+          "mode": "list",
+          "cachedResultName": "models/gemini-2.5-flash"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=You are a creative director for social media (Social media Videos + posts).\nGoal: Generate a caption and highly specific prompts for BOTH an image and a video that closely match the idea.\nAvoid generic words like “nice”, “cool”, “cinematic” without details. Be concrete.\n\nINPUT\nPlatform: {{$json.Platform}}\nIdea: {{$json.Idea}}\nTone: {{$json.Tone}}\nType: {{$json.Type}}\n\nOUTPUT RULES\nReturn a raw JSON object ONLY. No markdown. No extra text.\nMake the prompts detailed and consistent with the idea, tone, and platform.\nUse vivid, specific details: scene, subject, environment, lighting, lens/shot, color palette, mood, motion, composition.\nIf Idea mentions cold/winter/street—include breath vapor, snow texture, wind, gloves, condensation, street lamps, etc.\nKeep caption 1 sentence max. Hashtags: exactly 10, relevant, not spammy.\n\nReturn exactly these keys:\n{\n  \"caption\": \"\",\n  \"hashtags\": \"\",\n  \"image_prompt\": \"\",\n  \"video_prompt\": \"\",\n  \"video_shotlist\": [\"\", \"\", \"\"],\n  \"negative_prompt\": \"\"\n}\n\nPROMPT QUALITY CHECKLIST (must follow)\n- Image prompt includes: subject + action + setting + lighting + composition + lens style + color palette + texture details.\n- Video prompt includes: subject + action + setting + camera movement + pacing + fps + transitions + mood + end-frame.\n- video_shotlist: 3 shots max, each 1 line, describing shot type and movement.\n- negative_prompt: remove common artifacts (extra fingers, text, watermark, blurry).\n"
+            }
+          ]
+        },
+        "jsonOutput": true,
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        624,
+        208
+      ],
+      "id": "f2092951-a37b-46d8-ae75-e33007aa1e83",
+      "name": "Message a model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "1xi3DaVMSFmrgZDl",
+          "name": "Google Gemini(PaLM) Api account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": false,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "1c581c33-e794-4d91-b91f-11fa604f37d5",
+              "leftValue": "={{ $('Get row(s) in sheet').item.json.Type }}",
+              "rightValue": "Image",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {
+          "ignoreCase": true
+        }
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        832,
+        -96
+      ],
+      "id": "4e647c20-1def-4c09-8e71-6507e69a6b70",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "resource": "image",
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.5-flash-image",
+          "mode": "list",
+          "cachedResultName": "models/gemini-2.5-flash-image (Nano Banana)"
+        },
+        "prompt": "={{ $json.extract.image_prompt }}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        1056,
+        -192
+      ],
+      "id": "d05560be-6093-4ea5-b054-267ef13c1caf",
+      "name": "Generate an image",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "1xi3DaVMSFmrgZDl",
+          "name": "Google Gemini(PaLM) Api account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "video",
+        "modelId": {
+          "__rl": true,
+          "value": "models/veo-2.0-generate-001",
+          "mode": "list",
+          "cachedResultName": "models/veo-2.0-generate-001"
+        },
+        "prompt": "={{ $('Edit Fields').item.json.extract.video_prompt }}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        1056,
+        432
+      ],
+      "id": "39aa13ec-ae39-4d24-8df8-e1cb4a0d5517",
+      "name": "Generate a video",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "1xi3DaVMSFmrgZDl",
+          "name": "Google Gemini(PaLM) Api account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "name": "={{ $json.id }}_{{ $json.fileName }}",
+        "driveId": {
+          "__rl": true,
+          "value": "My Drive",
+          "mode": "list",
+          "cachedResultName": "My Drive",
+          "cachedResultUrl": "https://drive.google.com/drive/my-drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "value": "1wKdHTWus4537SCeeXaTrK9gAryvMYzsb",
+          "mode": "list",
+          "cachedResultName": "Images",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/1wKdHTWus4537SCeeXaTrK9gAryvMYzsb"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        1248,
+        -192
+      ],
+      "id": "1de12346-953c-4876-833a-0b70e3e68328",
+      "name": "Upload file",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "ZFX2nBAImB4TiUpi",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "name": "={{ $json.fileName }}",
+        "driveId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "My Drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "value": "19klRdCWjcdnkwdNxvA0ELr86_NEHKCqZ",
+          "mode": "list",
+          "cachedResultName": "Videos",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/19klRdCWjcdnkwdNxvA0ELr86_NEHKCqZ"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        1248,
+        432
+      ],
+      "id": "79afcc14-8f6d-4b17-8168-7b8bb46b8984",
+      "name": "Upload file1",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "ZFX2nBAImB4TiUpi",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $('Get row(s) in sheet').item.json.Platform }}",
+                    "rightValue": "Instagram",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "1e360fea-fcf6-40cd-8f16-709734829f9a"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "fd98e49f-50b6-419a-9ccb-eac8667804aa",
+                    "leftValue": "={{ $('Get row(s) in sheet').item.json.Platform }}",
+                    "rightValue": "X",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "50a5d1a9-aafd-4dfe-b5c8-236683df1ae6",
+                    "leftValue": "={{ $('Get row(s) in sheet').item.json.Platform }}",
+                    "rightValue": "LinkedIn",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        1456,
+        -208
+      ],
+      "id": "a66d70f5-f2fc-428e-9285-d7413d92a3aa",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "user": "sujiththota",
+        "platform": [
+          "instagram"
+        ],
+        "title": "={{ $('Edit Fields').item.json.extract.caption }} ",
+        "photos": "={{ $('Upload file').item.json.webContentLink }}",
+        "timezone": "Chicago"
+      },
+      "type": "n8n-nodes-upload-post.uploadPost",
+      "typeVersion": 1,
+      "position": [
+        1760,
+        -368
+      ],
+      "id": "86871d3a-362c-4d37-b637-fed67a2e2030",
+      "name": "Instagram",
+      "credentials": {
+        "uploadPostApi": {
+          "id": "zz6DR6BfymlzxcoE",
+          "name": "Upload Post account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "user": "sujiththota",
+        "platform": [
+          "linkedin"
+        ],
+        "title": "={{ $('Edit Fields').item.json.extract.caption }}",
+        "photos": "={{ $('Upload file').item.json.webContentLink }}",
+        "timezone": "Chicago",
+        "targetLinkedinPageId": "me"
+      },
+      "type": "n8n-nodes-upload-post.uploadPost",
+      "typeVersion": 1,
+      "position": [
+        1760,
+        48
+      ],
+      "id": "800a1ff2-ca11-4591-a1ef-8d1c1e7dfada",
+      "name": "LinkedIn",
+      "credentials": {
+        "uploadPostApi": {
+          "id": "zz6DR6BfymlzxcoE",
+          "name": "Upload Post account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $('Get row(s) in sheet').item.json.Platform }}",
+                    "rightValue": "Instagram",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "98b1bdad-ac48-4477-a322-0342212dcf67"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "512b2ea2-7878-4e87-8986-9dfe3f291238",
+                    "leftValue": "={{ $('Get row(s) in sheet').item.json.Platform }}",
+                    "rightValue": "X",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "69203c00-ca84-42ef-a655-81655124bfb2",
+                    "leftValue": "={{ $('Get row(s) in sheet').item.json.Platform }}",
+                    "rightValue": "LinkedIn",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        1472,
+        416
+      ],
+      "id": "205cd05f-2a97-4ff5-b92a-43dc79db9c6a",
+      "name": "Switch1"
+    },
+    {
+      "parameters": {
+        "operation": "uploadVideo",
+        "user": "sujiththota333",
+        "platform": [
+          "instagram"
+        ],
+        "title": "={{ $('Edit Fields').item.json.extract.caption }}",
+        "video": "={{ $('Upload file1').item.json.webContentLink }}",
+        "instagramMediaType": "REELS"
+      },
+      "type": "n8n-nodes-upload-post.uploadPost",
+      "typeVersion": 1,
+      "position": [
+        1760,
+        288
+      ],
+      "id": "68ab3ae6-93d0-4bb7-abbf-4535f591ac87",
+      "name": "Instagram1",
+      "credentials": {
+        "uploadPostApi": {
+          "id": "FzcmVGt9DgYVqqiv",
+          "name": "Upload Post account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "uploadVideo",
+        "user": "sujiththota",
+        "platform": [
+          "linkedin"
+        ],
+        "title": "={{ $('Edit Fields').item.json.extract.caption }}",
+        "video": "={{ $('Upload file1').item.json.webContentLink }}",
+        "timezone": "Chicago",
+        "targetLinkedinPageId": "me"
+      },
+      "type": "n8n-nodes-upload-post.uploadPost",
+      "typeVersion": 1,
+      "position": [
+        1760,
+        704
+      ],
+      "id": "35d11784-6f98-4882-aa81-eca6c2d937aa",
+      "name": "LinkedIn1",
+      "credentials": {
+        "uploadPostApi": {
+          "id": "zz6DR6BfymlzxcoE",
+          "name": "Upload Post account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "user": "sujiththota",
+        "platform": [
+          "x"
+        ],
+        "title": "={{ $('Edit Fields').item.json.extract.caption }}",
+        "photos": "={{ $('Upload file').item.json.webContentLink }}",
+        "timezone": "Chicago"
+      },
+      "type": "n8n-nodes-upload-post.uploadPost",
+      "typeVersion": 1,
+      "position": [
+        1760,
+        -176
+      ],
+      "id": "ae402293-7f32-4c5a-bd17-dc42c9ac3710",
+      "name": "Twitter (X)",
+      "credentials": {
+        "uploadPostApi": {
+          "id": "zz6DR6BfymlzxcoE",
+          "name": "Upload Post account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "uploadVideo",
+        "user": "sujiththota",
+        "platform": [
+          "x"
+        ],
+        "title": "={{ $('Edit Fields').item.json.extract.caption }}",
+        "video": "={{ $('Upload file1').item.json.webContentLink }}"
+      },
+      "type": "n8n-nodes-upload-post.uploadPost",
+      "typeVersion": 1,
+      "position": [
+        1760,
+        496
+      ],
+      "id": "d8b915f6-867f-4619-99ec-6016dc896672",
+      "name": "Twitter (X)1",
+      "credentials": {
+        "uploadPostApi": {
+          "id": "zz6DR6BfymlzxcoE",
+          "name": "Upload Post account 2"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Message a model",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message a model": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Generate an image",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Generate a video",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate an image": {
+      "main": [
+        [
+          {
+            "node": "Upload file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate a video": {
+      "main": [
+        [
+          {
+            "node": "Upload file1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload file": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Instagram",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Twitter (X)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "LinkedIn",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload file1": {
+      "main": [
+        [
+          {
+            "node": "Switch1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch1": {
+      "main": [
+        [
+          {
+            "node": "Instagram1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Twitter (X)1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "LinkedIn1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "e9b2e77a-905d-497c-9654-5740186acc94",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "9d5c1b010202569087e654e1c88d016be4864d643dd0f7daf12eb6f910242768"
+  },
+  "id": "gBxsGMPD2LjNufWwNHoct",
+  "tags": []
+}
